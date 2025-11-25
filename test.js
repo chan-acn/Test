@@ -1,16 +1,14 @@
-// Correct camelCas
-let userName = "Alice";
-const totalCount = 10;
+// Badly named function
+function do_stuff() {
+    console.log("Doing stuff");
+}
 
-// Incorrect (snake_case)
-let user_name = "Bob";
+// Another non-camelCase function
+function process_data() {
+    return "processed";
+}
 
-// Incorrect (PascalCase)
-let UserName = "Charlie";
-
-// Incorrect (all caps)
-const TOTAL_COUNT = 20;
-
-
-
-
+// Good camelCase function
+function calculateTotal(price, tax) {
+    return price + tax;
+}
