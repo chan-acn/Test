@@ -8,8 +8,8 @@
 
 import javascript
 
-predicate isCamelCase(string name) {
-  name.matches("[a-z][a-zA-Z0-9]*") and not name.matches(".*_.*")
+predicate isCamelCase(string n) {
+  n.matches("[a-z][a-zA-Z0-9]*") and not n.matches(".*_.*")
 }
 
 from Variable v
