@@ -8,8 +8,7 @@
 
 import javascript
 
-from VariableDeclaration vd, Identifier id
+from Variable v
 where
-  id = vd.getAChild*() and // get identifiers declared in this VariableDeclaration
-  not id.getName().regexpMatch("^[a-z][a-zA-Z0-9]*$")
-select id, "Variable '" + id.getName() + "' is not camelCase."
+  not v.getName().regexpMatch("^[a-z][a-zA-Z0-9]*$")
+select v, "Variable '" + v.getName() + "' is not camelCase."
