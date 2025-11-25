@@ -9,7 +9,7 @@
 import javascript
 
 predicate isCamelCase(string n) {
-  n.matches("[a-z][a-zA-Z0-9]*") and not n.matches(".*_.*")
+  n.matches("[a-z][a-zA-Z0-9]*")
 }
 
 from Variable v
