@@ -1,6 +1,6 @@
 /**
  * @name Detect non-camelCase JavaScript variables
- * @description Finds all variables that are not camelCase
+ * @description Finds variables that are not camelCase
  * @kind problem
  * @id js/nonCamelCaseVariables
  * @tags maintainability, style
@@ -8,14 +8,11 @@
 
 import javascript
 
-/**
- * Select all identifiers that are declared as variables
- * (including let, const, var, destructured)
- */
-from Identifier id
+// Get all variable declarators
+from VariableDeclarator vd, VarRef v
 where
-  // Only consider variables declared in a VariableDeclarator
-  id.getDeclaringNode() instanceof VariableDeclarator and
-  // Regex for camelCase: starts with lowercase, then letters or digits
-  not id.getName().regexpMatch("^[a-z][a-zA-Z0-9]*$")
-select id, "Variable '" + id.getName() + "' is not camelCase."
+  // v is a variable declared by this declarator
+  v = vd.getBindingPattern().getAChild()* and
+  // Only flag names not in camelCase
+  not v.getName().regexpMatch("^[a-z][a-zA-Z0-9]*$")
+select v, "Variable '" + v.getName() + "' is not camelCase."
