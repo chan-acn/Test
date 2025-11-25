@@ -1,19 +1,13 @@
 import javascript
 
 /**
- * A simple regex that matches valid camelCase names:
- *   - starts with lowercase letter
- *   - then letters or digits
- *   - no underscores
+ * Check if a variable name is camelCase.
  */
 predicate isCamelCase(string name) {
   name.regexpMatch("^[a-z][a-zA-Z0-9]*$")
 }
 
-from VariableDeclarator v, Identifier id
+from Variable v
 where
-  id = v.getId() and
-  not isCamelCase(id.getName())
-select id,
-  "Variable '" + id.getName() +
-  "' is not in camelCase format."
+  not isCamelCase(v.getName())
+select v, "Variable '" + v.getName() + "' is not camelCase."
