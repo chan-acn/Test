@@ -1,4 +1,4 @@
-// Correct camelCas
+// Correct camelCase
 let userName = "Alice";
 const totalCount = 10;
 
@@ -10,5 +10,6 @@ let UserName = "Charlie";
 
 // Incorrect (all caps)
 const TOTAL_COUNT = 20;
+
 
 
