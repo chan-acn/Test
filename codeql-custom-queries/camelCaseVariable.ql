@@ -8,8 +8,6 @@
 
 import javascript
 
-from VariableDeclarator vd, Variable v
-where
-  v = vd.getVariable() and
-  not v.getName().regexpMatch("^[a-z][a-zA-Z0-9]*$")
+from Variable v
+where not v.getName().regexpMatch("^[a-z][a-zA-Z0-9]*$")
 select v, "Variable '" + v.getName() + "' is not camelCase."
