@@ -7,8 +7,3 @@ function do_stuff() {
 function process_data() {
     return "processed";
 }
-
-// Good camelCase function
-function calculateTotal(price, tax) {
-    return price + tax;
-}
