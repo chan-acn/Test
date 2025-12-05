@@ -1,13 +1,14 @@
 /**
- * @name Detect non-camelCase JavaScript variables
- * @description Finds variables that are not camelCase
+ * @name Non-camelCase Variable Names
+ * @description Finds variable names that do not follow the camelCase naming convention.
  * @kind problem
- * @id js/nonCamelCaseVariables
- * @tags maintainability, style
+ * @problem.severity error
+ * @tags naming-convention
+ *       style
  */
 
 import javascript
 
-from Function f
-where not f.getName().matches("^[a-z][A-Za-z0-9]*$")
-select f, "Function name '" + f.getName() + "' is not camelCase."
+from Variable v
+where not v.getName().matches("[a-z][a-zA-Z0-9]*")
+select v, "This variable does not follow camelCase naming convention."
