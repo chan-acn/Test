@@ -1,14 +1,12 @@
-// Badly named function
-function do_stuff() {
-    console.log("Doing stuff");
-}
-
-// Another non-camelCase function
-function process_data() {
-    return "processed";
-}
-
-// Good camelCase function
-function calculateTotal(price, tax) {
-    return price + tax;
-}
+var TestCase = "";
+var testcase = "";
+var testCase = "";
+var Testcase = "";
+let TestCase = "";
+let testcase = "";
+let testCase = "";
+let Testcase = "";
+const TestCase = "";
+const testcase = "";
+const testCase = "";
+const Testcase = "";
