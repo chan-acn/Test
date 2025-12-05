@@ -3,8 +3,8 @@
  * @description Finds variable names that do not follow the camelCase naming convention.
  * @kind problem
  * @problem.severity error
- * @tags naming-convention
- *       style
+ * @id non-camelcase-variable-names
+ * @tags maintainability style
  */
 
 import javascript
