@@ -23,7 +23,6 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: javascript  # Changed to single language: JavaScript only
-        config-file: ./.github/custom_codeql.yml
  
     - name: Setup Node.js
       uses: actions/setup-node@v4
