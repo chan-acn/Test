@@ -15,11 +15,6 @@ jobs:
       contents: read
       security-events: write
  
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript', 'csharp' ]
- 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -27,13 +22,20 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
-        config-file: ./.github/custom_codeql.yml  # Updated to match your file name
+        languages: javascript  # Changed to single language: JavaScript only
+        config-file: ./.github/custom_codeql.yml
  
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'  # Added for JS builds
+ 
+    - name: Install dependencies and build
+      run: |
+        npm install
+        npm run build  # Adjust if your build script differs (e.g., 'npm run compile')
  
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{matrix.language}}"
+        category: "/language:javascript"
