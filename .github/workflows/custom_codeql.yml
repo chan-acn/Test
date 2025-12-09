@@ -24,7 +24,7 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         build-mode: ${{ matrix.build-mode }}
-        config-file: ./custom-queries
+        config-file: ./codeql-custom-queries
  
     - name: Run manual build steps
       if: matrix.build-mode == 'manual'
