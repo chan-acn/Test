@@ -1,8 +1,9 @@
 /**
- * @name Detect non-camelCase JavaScript variables
- * @description Finds variables that are not camelCase
+ * @name Detect non-camelCase JavaScript funtions
+ * @description Finds funtions that are not camelCase
  * @kind problem
- * @id js/nonCamelCaseVariables
+ * @problem.severity error
+ * @id js/nonCamelCaseFuntions
  * @tags maintainability, style
  */
 
