@@ -3,7 +3,7 @@
  * @description Finds funtions that are not camelCase 
  * @kind problem
  * @problem.severity error
- * @id js/nonCamelCaseFuntion
+ * @id js/nonCamelCaseFuntions
  * @tags maintainability, style
  */
 
