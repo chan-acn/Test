@@ -1,32 +1,39 @@
-# .github/workflows/codeql-analysis.yml
-   name: "CodeQL"
+name: "CodeQL"
  
-   on:
-     push:
-       branches: [ "main" ]
-     pull_request:
-       branches: [ "main" ]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
  
-   jobs:
-     analyze:
-       name: Analyze
-       runs-on: ubuntu-latest
-       permissions:
-         security-events: write
-         actions: read
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
  
-       steps:
-       - name: Checkout repository
-         uses: actions/checkout@v4
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript', 'csharp' ]
  
-       - name: Initialize CodeQL
-         uses: github/codeql-action/init@v3
-         with:
-           languages: <language> # e.g., java, python, javascript
-           config-file: ./.github/codeql-config.yml # Path to your custom config
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
  
-       - name: Autobuild
-         uses: github/codeql-action/autobuild@v3
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        config-file: ./custom_codeql.yml  # Updated to match your file name
  
-       - name: Perform CodeQL Analysis
-         uses: github/codeql-action/analyze@v3
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+ 
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
