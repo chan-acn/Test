@@ -1,6 +1,6 @@
 /**
  * @name Detect non-camelCase JavaScript funtions
- * @description Finds funtions that are not camelCase
+ * @description Finds funtions that are not camelCase 
  * @kind problem
  * @problem.severity error
  * @id js/nonCamelCaseFuntions
