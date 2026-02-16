@@ -13,9 +13,9 @@ name: "Custom CodeQL"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "Test_Feb_26" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "Test_Feb_26" ]
   schedule:
     - cron: '15 22 * * 4'
 
