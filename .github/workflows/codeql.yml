@@ -58,7 +58,7 @@ jobs:
 
           build-mode: ${{ matrix.build-mode }}
 
-          queries: ./Custom-CodeQL-Queries
+          queries: ./codeql-custom-queries
 
           config-file: ./.github/codeql/config.yml
 
