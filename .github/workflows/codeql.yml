@@ -60,7 +60,7 @@ jobs:
 
           queries: ./Custom-CodeQL-Queries
 
-          config-file: ./.github/codeql/cat_codeql_config.yml
+          config-file: ./.github/codeql/config.yml
 
       - name: Perform CodeQL Analysis
 
