@@ -2,9 +2,9 @@
 name: Custom Code Quality Scan
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "PSCRM_Mar_26" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "PSCRM_Mar_26" ]
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
