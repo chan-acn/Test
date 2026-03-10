@@ -1,8 +1,6 @@
 # This is a workflow for GitHub Repository Custom Code Quality Scanning Enablement.
 name: Custom Code Quality Scan
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 jobs:
