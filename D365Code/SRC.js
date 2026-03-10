@@ -5316,6 +5316,43 @@ CAT.DSRM.ServiceRequestCommon = {
         }
     },
     /**
+     * Function to validate the CPI Number
+     * @param {object} liquidContext
+     */
+    CPINumberOnChange1: function (liquidContext) {
+        if (!liquidContext)
+            return;
+        var cpiNumber = $("#cat_cpinumber").length > 0 && $("#cat_cpinumber").val() ? $("#cat_cpinumber").val().split(";")[0] : null;
+        if (cpiNumber) {
+            var teamLeadURL = "";
+            //for production, take the prod url
+            if (window.location.href.indexOf("dev") > -1 || window.location.href.indexOf("uat") > -1) {
+                teamLeadURL = "https://dvapiq.rd.cat.com/icc2/getcpiteamlead/views/getcpiteamlead?cpi_number=" + cpiNumber + "&$format=json";
+            }
+            else {
+                teamLeadURL = "https://dvapi.cat.com/icc2/getcpiteamlead/views/getcpiteamlead?cpi_number=" + cpiNumber + "&$format=json";
+            }
+            var fetchCPITeamLeadEmailObject =
+            {
+                //cpiurl: "https://dvapi.cat.com/icc2/getcpiteamlead/views/getcpiteamlead?cpi_number=" + cpiNumber + "&$format=json",
+                //cpiurl: "https://dvapiq.rd.cat.com/icc2/getcpiteamlead/views/getcpiteamlead?cpi_number=" + cpiNumber + "&$format=json",
+                cpiurl: teamLeadURL,
+            };
+            CAT.DSRM.WebApi.CallAction('cat_fetchcpiteamleademail',
+                fetchCPITeamLeadEmailObject,
+                function (result) {
+                    CAT.DSRM.ServiceRequestCommon.VerifyCPIResponse(result);
+                },
+                function (e) {
+                    CAT.DSRM.ServiceRequestCommon.SetValue("cat_cpinumber", null);
+                    CAT.DSRM.ServiceRequestCommon.SetValue("cat_cpiprimarynumber", null);
+                    CAT.DSRM.ServiceRequestCommon.SetValue("cat_cpiprimarynumber_header", null, true);
+                    let alertcpinumberinvalid = CAT.DSRM.ServiceRequestCommon.GetGlobalSnippetValueById("cat_alert_cpi_number_invalid");
+                    alert(alertcpinumberinvalid);
+                }, false);
+        }
+    },
+    /**
      * Function to verify the CPI service response and show alerts based on the response
      * @param {any} cpiServiceResponse
      */
