@@ -5319,7 +5319,7 @@ CAT.DSRM.ServiceRequestCommon = {
      * Function to validate the CPI Number
      * @param {object} liquidContext
      */
-    CPINumberOnChange12: function (liquidContext) {
+    CPINumberOnChange1: function (liquidContext) {
         if (!liquidContext)
             return;
         var cpiNumber = $("#cat_cpinumber").length > 0 && $("#cat_cpinumber").val() ? $("#cat_cpinumber").val().split(";")[0] : null;
