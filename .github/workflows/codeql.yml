@@ -1,5 +1,6 @@
 # This is a workflow for GitHub Repository Custom Code Quality Scanning Enablement.
 name: Custom Code Quality Scan
+ 
 on:
   pull_request_target:
     branches: [ "main" ]
@@ -40,7 +41,7 @@ jobs:
  
       - name: Check for violations
         run: |
-          count=$(jq '[.runs[].results[]] | length' results.sarif)
+          count=$(cat results.sarif/*.sarif | jq -s '[.[].runs[].results[]] | length')
           echo "Found $count result(s)"
           if [ "$count" -gt "0" ]; then
             echo "Custom query violations found, blocking PR"
