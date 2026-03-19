@@ -92,9 +92,12 @@ jobs:
               ).join('\n');
 
               body = `## ⚠️ Code Scan — ${count} Violation(s) Found\n\n` +
+                     `<details>\n` +
+                     `<summary>Click to expand violations</summary>\n\n` +
                      `| Rule | Message | File | Line |\n` +
                      `|------|---------|------|------|\n` +
                      `${rows}\n\n` +
+                     `</details>\n\n` +
                      `> Please review the violations above. PR is still mergeable.`;
             } else {
               body = `## ✅ Code Scan Passed\nNo violations found.`;
