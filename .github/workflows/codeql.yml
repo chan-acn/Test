@@ -38,6 +38,10 @@ jobs:
           category: "/language:${{ matrix.language }}"
           output: results.sarif
           upload: false
+
+      - name: Print SARIF results
+        run: |
+          cat results.sarif/javascript.sarif | jq '[.runs[].results[] | {rule: .ruleId, message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}]'
  
       - name: Check for violations
         run: |
