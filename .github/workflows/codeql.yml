@@ -3,6 +3,7 @@ name: Custom Code Quality Scan
 on:
   pull_request_target:
     branches: [ "main" ]
+ 
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -21,6 +22,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+ 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -28,8 +30,26 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
           queries: ./codeql-custom-queries
           config-file: ./.github/codeql/config.yml
+ 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
-          fail-on: warning
+          output: results.sarif
+          upload: false
+ 
+      - name: Check for violations
+        run: |
+          count=$(jq '[.runs[].results[]] | length' results.sarif)
+          echo "Found $count result(s)"
+          if [ "$count" -gt "0" ]; then
+            echo "Custom query violations found, blocking PR"
+            exit 1
+          fi
+ 
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
+          category: "/language:${{ matrix.language }}"
