@@ -14,6 +14,7 @@ jobs:
       packages: read
       actions: read
       contents: read
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -44,21 +45,84 @@ jobs:
           cat results.sarif/javascript.sarif | jq '[.runs[].results[] | {rule: .ruleId, message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}]'
 
       - name: Check for violations (warn only)
+        id: scan
         run: |
           count=$(cat results.sarif/*.sarif | jq -s '[.[].runs[].results[]] | length')
+          echo "count=$count" >> $GITHUB_OUTPUT
           echo "Found $count result(s)"
-          if [ "$count" -gt "0" ]; then
-            echo "::warning::Custom query found $count violation(s) — review annotations below."
 
-            # Emit one warning annotation per violation with file + line context
+          if [ "$count" -gt "0" ]; then
+
+            # Save violations as JSON for next step
+            cat results.sarif/*.sarif | jq -s '
+              [.[].runs[].results[] | {
+                rule: .ruleId,
+                message: .message.text,
+                file: .locations[0].physicalLocation.artifactLocation.uri,
+                line: .locations[0].physicalLocation.region.startLine
+              }]
+            ' > violations.json
+
+            # Warning annotations on PR diff
             cat results.sarif/*.sarif | jq -r '
               .runs[].results[] |
               "::warning file=\(.locations[0].physicalLocation.artifactLocation.uri),line=\(.locations[0].physicalLocation.region.startLine)::\(.ruleId) — \(.message.text)"
             '
+
+            # ✅ No exit 1 — no error annotation
+
           else
             echo "No violations found."
           fi
-          # ✅ No exit 1 — workflow always passes
+
+      - name: Post PR Comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const count = parseInt('${{ steps.scan.outputs.count }}' || '0');
+            let body = '';
+
+            if (count > 0) {
+              const fs = require('fs');
+              const violations = JSON.parse(fs.readFileSync('violations.json', 'utf8'));
+
+              const rows = violations.map(v =>
+                `| \`${v.rule}\` | ${v.message} | \`${v.file}\` | ${v.line} |`
+              ).join('\n');
+
+              body = `## ⚠️ Code Scan — ${count} Violation(s) Found\n\n` +
+                     `| Rule | Message | File | Line |\n` +
+                     `|------|---------|------|------|\n` +
+                     `${rows}\n\n` +
+                     `> Please review the violations above. PR is still mergeable.`;
+            } else {
+              body = `## ✅ Code Scan Passed\nNo violations found.`;
+            }
+
+            // Delete previous bot comment if exists, then post fresh
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const botComment = comments.data.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Code Scan')
+            );
+            if (botComment) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              });
+            }
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
 
       - name: Upload SARIF
         if: always()
