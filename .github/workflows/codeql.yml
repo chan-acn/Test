@@ -3,7 +3,7 @@ name: Custom Code Quality Scan
 
 on:
   pull_request:
-    branches: [ "Test" ]
+    branches: [ "Child_Test" ]
 
 jobs:
   analyze:
@@ -48,17 +48,29 @@ jobs:
           count=$(cat results.sarif/*.sarif | jq -s '[.[].runs[].results[]] | length')
           echo "Found $count result(s)"
           if [ "$count" -gt "0" ]; then
-            echo "::warning::Custom query found $count violation(s) — review annotations below."
 
-            # Emit one warning annotation per violation with file + line context
+            # ── Write to Job Summary (visible in PR check) ──────────────
+            echo "## ⚠️ Code Scan Violations Found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Rule | Message | File | Line |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|---------|------|------|" >> $GITHUB_STEP_SUMMARY
+            cat results.sarif/*.sarif | jq -r '
+              .runs[].results[] |
+              "| \(.ruleId) | \(.message.text) | \(.locations[0].physicalLocation.artifactLocation.uri) | \(.locations[0].physicalLocation.region.startLine) |"
+            ' >> $GITHUB_STEP_SUMMARY
+
+            # ── Warning annotations on PR diff ───────────────────────────
             cat results.sarif/*.sarif | jq -r '
               .runs[].results[] |
               "::warning file=\(.locations[0].physicalLocation.artifactLocation.uri),line=\(.locations[0].physicalLocation.region.startLine)::\(.ruleId) — \(.message.text)"
             '
+
+            # ✅ No exit 1 — workflow always passes
+
           else
+            echo "## ✅ No Violations Found" >> $GITHUB_STEP_SUMMARY
             echo "No violations found."
           fi
-          # ✅ No exit 1 — workflow always passes
 
       - name: Upload SARIF
         if: always()
