@@ -1,10 +1,10 @@
 # This is a workflow for GitHub Repository Custom Code Quality Scanning Enablement.
 name: Custom Code Quality Scan
-
+ 
 on:
   pull_request:
     branches: [ "Test" ]
-
+ 
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
+ 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -32,27 +32,27 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
           queries: ./codeql-custom-queries
           config-file: ./.github/codeql/config.yml
-
+ 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
           output: results.sarif
           upload: false
-
+ 
       - name: Print SARIF results
         run: |
           cat results.sarif/javascript.sarif | jq '[.runs[].results[] | {rule: .ruleId, message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}]'
-
+ 
       - name: Check for violations (warn only)
         id: scan
         run: |
           count=$(cat results.sarif/*.sarif | jq -s '[.[].runs[].results[]] | length')
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "Found $count result(s)"
-
+ 
           if [ "$count" -gt "0" ]; then
-
+ 
             # Save violations as JSON for next step
             cat results.sarif/*.sarif | jq -s '
               [.[].runs[].results[] | {
@@ -62,19 +62,19 @@ jobs:
                 line: .locations[0].physicalLocation.region.startLine
               }]
             ' > violations.json
-
+ 
             # Warning annotations on PR diff
             cat results.sarif/*.sarif | jq -r '
               .runs[].results[] |
               "::warning file=\(.locations[0].physicalLocation.artifactLocation.uri),line=\(.locations[0].physicalLocation.region.startLine)::\(.ruleId) — \(.message.text)"
             '
-
+ 
             # ✅ No exit 1 — no error annotation
-
+ 
           else
             echo "No violations found."
           fi
-
+ 
       - name: Post PR Comment
         if: always()
         uses: actions/github-script@v7
@@ -82,27 +82,24 @@ jobs:
           script: |
             const count = parseInt('${{ steps.scan.outputs.count }}' || '0');
             let body = '';
-
+ 
             if (count > 0) {
               const fs = require('fs');
               const violations = JSON.parse(fs.readFileSync('violations.json', 'utf8'));
-
+ 
               const rows = violations.map(v =>
                 `| \`${v.rule}\` | ${v.message} | \`${v.file}\` | ${v.line} |`
               ).join('\n');
-
+ 
               body = `## ⚠️ Code Scan — ${count} Violation(s) Found\n\n` +
-                     `<details>\n` +
-                     `<summary>Click to expand violations</summary>\n\n` +
                      `| Rule | Message | File | Line |\n` +
                      `|------|---------|------|------|\n` +
                      `${rows}\n\n` +
-                     `</details>\n\n` +
                      `> Please review the violations above. PR is still mergeable.`;
             } else {
               body = `## ✅ Code Scan Passed\nNo violations found.`;
             }
-
+ 
             // Delete previous bot comment if exists, then post fresh
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -119,17 +116,10 @@ jobs:
                 comment_id: botComment.id
               });
             }
-
+ 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body
             });
-
-      - name: Upload SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: results.sarif
-          category: "/language:${{ matrix.language }}"
