@@ -21,7 +21,7 @@ jobs:
             build-mode: none
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -42,14 +42,13 @@ jobs:
         run: |
           cat results.sarif/javascript.sarif | jq '[.runs[].results[] | {rule: .ruleId, message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}]'
 
-      - name: Check for violations (warn only)
+      - name: Check for violations
         id: scan
         run: |
           count=$(cat results.sarif/*.sarif | jq -s '[.[].runs[].results[]] | length')
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "Found $count result(s)"
           if [ "$count" -gt "0" ]; then
-            # Save cat_custom_codescan as JSON for artifact upload + comment link
             cat results.sarif/*.sarif | jq -s '
               [.[].runs[].results[] | {
                 rule: .ruleId,
@@ -58,11 +57,6 @@ jobs:
                 line: .locations[0].physicalLocation.region.startLine
               }]
             ' > cat_custom_codescan.json
-            # Warning annotations on PR diff
-            cat results.sarif/*.sarif | jq -r '
-              .runs[].results[] |
-              "::warning file=\(.locations[0].physicalLocation.artifactLocation.uri),line=\(.locations[0].physicalLocation.region.startLine)::\(.ruleId) — \(.message.text)"
-            '
           else
             echo "No violations found."
           fi
@@ -70,7 +64,7 @@ jobs:
       # ✅ NEW: Upload cat_custom_codescan.json as a downloadable artifact
       - name: Upload Code Scan Report
         if: steps.scan.outputs.count > 0
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cat-custom-codescan
           path: cat_custom_codescan.json
@@ -78,7 +72,7 @@ jobs:
 
       - name: Post PR Comment
         if: always()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const count = parseInt('${{ steps.scan.outputs.count }}' || '0');
