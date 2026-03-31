@@ -67,13 +67,13 @@ jobs:
             echo "No violations found."
           fi
 
-      # ✅ NEW: Upload violations.json as a downloadable artifact
-      - name: Upload Violations Report
+      # ✅ NEW: Upload cat_custom_codescan.json as a downloadable artifact
+      - name: Upload Code Scan Report
         if: steps.scan.outputs.count > 0
         uses: actions/upload-artifact@v4
         with:
-          name: code-scan-violations
-          path: violations.json
+          name: cat-custom-codescan
+          path: cat_custom_codescan.json
           retention-days: 14
 
       - name: Post PR Comment
@@ -86,13 +86,13 @@ jobs:
 
             let body = '';
             if (count > 0) {
-              body = `## ⚠️ Code Scan — ${count} Violation(s) Found\n\n` +
+              body = `## ⚠️ Custom Code Scan\n\n` +
                      `A full report has been uploaded as a downloadable artifact.\n\n` +
-                     `📎 **[Download \`violations.json\`](${runUrl})** — ` +
-                     `navigate to the run page and find **code-scan-violations** under *Artifacts*.\n\n` +
+                     `📎 **[Download \`cat_custom_codescan.json\`](${runUrl})** — ` +
+                     `navigate to the run page and find **cat-custom-codescan** under *Artifacts*.\n\n` +
                      `> Please review the violations. PR is still mergeable.`;
             } else {
-              body = `## ✅ Code Scan Passed\nNo violations found.`;
+              body = `## ✅ Code Scan Passed\n`;
             }
 
             // Delete previous bot comment if exists, then post fresh
