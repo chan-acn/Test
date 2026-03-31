@@ -49,7 +49,7 @@ jobs:
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "Found $count result(s)"
           if [ "$count" -gt "0" ]; then
-            # Save violations as JSON for artifact upload + comment link
+            # Save cat_custom_codescan as JSON for artifact upload + comment link
             cat results.sarif/*.sarif | jq -s '
               [.[].runs[].results[] | {
                 rule: .ruleId,
@@ -57,7 +57,7 @@ jobs:
                 file: .locations[0].physicalLocation.artifactLocation.uri,
                 line: .locations[0].physicalLocation.region.startLine
               }]
-            ' > violations.json
+            ' > cat_custom_codescan.json
             # Warning annotations on PR diff
             cat results.sarif/*.sarif | jq -r '
               .runs[].results[] |
@@ -90,9 +90,9 @@ jobs:
                      `A full report has been uploaded as a downloadable artifact.\n\n` +
                      `📎 **[Download \`cat_custom_codescan.json\`](${runUrl})** — ` +
                      `navigate to the run page and find **cat-custom-codescan** under *Artifacts*.\n\n` +
-                     `> Please review the violations. PR is still mergeable.`;
+                     `> Please review the cat-custom-codescan. PR is still mergeable.`;
             } else {
-              body = `## ✅ Code Scan Passed\n`;
+              body = `## ✅ Custom Code Scan Passed\n`;
             }
 
             // Delete previous bot comment if exists, then post fresh
