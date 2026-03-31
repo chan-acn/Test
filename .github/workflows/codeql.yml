@@ -1,10 +1,8 @@
 # This is a workflow for GitHub Repository Custom Code Quality Scanning Enablement.
 name: Custom Code Quality Scan
- 
 on:
   pull_request:
     branches: [ "Test" ]
- 
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -24,7 +22,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
- 
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -32,28 +30,26 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
           queries: ./codeql-custom-queries
           config-file: ./.github/codeql/config.yml
- 
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
           output: results.sarif
           upload: false
- 
+
       - name: Print SARIF results
         run: |
           cat results.sarif/javascript.sarif | jq '[.runs[].results[] | {rule: .ruleId, message: .message.text, file: .locations[0].physicalLocation.artifactLocation.uri, line: .locations[0].physicalLocation.region.startLine}]'
- 
+
       - name: Check for violations (warn only)
         id: scan
         run: |
           count=$(cat results.sarif/*.sarif | jq -s '[.[].runs[].results[]] | length')
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "Found $count result(s)"
- 
           if [ "$count" -gt "0" ]; then
- 
-            # Save violations as JSON for next step
+            # Save violations as JSON for artifact upload + comment link
             cat results.sarif/*.sarif | jq -s '
               [.[].runs[].results[] | {
                 rule: .ruleId,
@@ -62,44 +58,43 @@ jobs:
                 line: .locations[0].physicalLocation.region.startLine
               }]
             ' > violations.json
- 
             # Warning annotations on PR diff
             cat results.sarif/*.sarif | jq -r '
               .runs[].results[] |
               "::warning file=\(.locations[0].physicalLocation.artifactLocation.uri),line=\(.locations[0].physicalLocation.region.startLine)::\(.ruleId) — \(.message.text)"
             '
- 
-            # ✅ No exit 1 — no error annotation
- 
           else
             echo "No violations found."
           fi
- 
+
+      # ✅ NEW: Upload violations.json as a downloadable artifact
+      - name: Upload Violations Report
+        if: steps.scan.outputs.count > 0
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-scan-violations
+          path: violations.json
+          retention-days: 14
+
       - name: Post PR Comment
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const count = parseInt('${{ steps.scan.outputs.count }}' || '0');
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+
             let body = '';
- 
             if (count > 0) {
-              const fs = require('fs');
-              const violations = JSON.parse(fs.readFileSync('violations.json', 'utf8'));
- 
-              const rows = violations.map(v =>
-                `| \`${v.rule}\` | ${v.message} | \`${v.file}\` | ${v.line} |`
-              ).join('\n');
- 
               body = `## ⚠️ Code Scan — ${count} Violation(s) Found\n\n` +
-                     `| Rule | Message | File | Line |\n` +
-                     `|------|---------|------|------|\n` +
-                     `${rows}\n\n` +
-                     `> Please review the violations above. PR is still mergeable.`;
+                     `A full report has been uploaded as a downloadable artifact.\n\n` +
+                     `📎 **[Download \`violations.json\`](${runUrl})** — ` +
+                     `navigate to the run page and find **code-scan-violations** under *Artifacts*.\n\n` +
+                     `> Please review the violations. PR is still mergeable.`;
             } else {
               body = `## ✅ Code Scan Passed\nNo violations found.`;
             }
- 
+
             // Delete previous bot comment if exists, then post fresh
             const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -116,7 +111,6 @@ jobs:
                 comment_id: botComment.id
               });
             }
- 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
